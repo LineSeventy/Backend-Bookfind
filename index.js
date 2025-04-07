@@ -1,24 +1,26 @@
-const express = require('express');
-const { Pool } = require('pg');
-const cors = require('cors');
-const axios = require('axios');
-require('dotenv').config();
+const functions = require("firebase-functions");
+const express = require("express");
+const { Pool } = require("pg");
+const cors = require("cors");
+const axios = require("axios");
 
 const app = express();
-const port = 5000;
 
-app.use(cors());
+// Configure CORS
+app.use(cors({
+  origin: 'https://your-cloudflare-site.pages.dev', // or '*' for testing
+  credentials: true
+}));
 app.use(express.json());
 
+// PostgreSQL connection (IMPORTANT: You must use a PUBLIC host, not localhost)
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'Books-Data',
-  password: 'Postgres',
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // only for hosted DBs
+  },
 });
-
-// ========== Your existing route ==========
+// ===== /matched-books endpoint =====
 app.get('/api/matched-books', async (req, res) => {
   try {
     const bookId = req.query.id;
@@ -55,7 +57,7 @@ app.get('/api/matched-books', async (req, res) => {
   }
 });
 
-// ========== PayMongo route ==========
+// ===== /create-payment endpoint =====
 app.post('/api/create-payment', async (req, res) => {
   const { amount } = req.body;
 
@@ -65,7 +67,7 @@ app.post('/api/create-payment', async (req, res) => {
       {
         data: {
           attributes: {
-            amount: amount * 100, // centavos
+            amount: amount * 100,
             payment_method_allowed: ['card', 'gcash'],
             payment_method_types: ['card'],
             currency: 'PHP',
@@ -74,8 +76,7 @@ app.post('/api/create-payment', async (req, res) => {
       },
       {
         headers: {
-          Authorization:
-            'Basic ' + Buffer.from(process.env.PAYMONGO_SECRET + ':').toString('base64'),
+          Authorization: 'Basic ' + Buffer.from(functions.config().paymongo.secret + ':').toString('base64'),
           'Content-Type': 'application/json',
         },
       }
@@ -88,6 +89,10 @@ app.post('/api/create-payment', async (req, res) => {
   }
 });
 
+// Export the app as a Firebase function
+exports.api = functions.https.onRequest(app);
+
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
