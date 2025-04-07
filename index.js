@@ -7,7 +7,7 @@ const app = express();
 
 // Configure CORS
 app.use(cors({
-  origin: 'https://your-cloudflare-site.pages.dev', // or '*' for testing
+  origin: ['https://book-finds.vercel.app/', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
