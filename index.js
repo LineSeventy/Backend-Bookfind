@@ -52,11 +52,10 @@ app.get('/api/matched-books', async (req, res) => {
       totalPages: Math.ceil(totalBooks / limit),
     });
   } catch (error) {
-    console.error('Error fetching matched_books:', error);
+    console.error('Error fetching matched_books:', error); // 👈 this line is key
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 // ===== /create-payment endpoint =====
 app.post('/api/create-payment', async (req, res) => {
   const { amount } = req.body;
