@@ -7,7 +7,7 @@ const app = express();
 
 // Configure CORS
 app.use(cors({
-  origin: ['https://book-finds.vercel.app/', 'http://localhost:5173'],
+  origin: ['https://book-find-theta.vercel.app/'],
   credentials: true
 }));
 app.use(express.json());
