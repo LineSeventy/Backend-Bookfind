@@ -1,4 +1,3 @@
-const functions = require("firebase-functions");
 const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
@@ -13,13 +12,14 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// PostgreSQL connection (IMPORTANT: You must use a PUBLIC host, not localhost)
+// PostgreSQL connection (IMPORTANT: Use a public host, not localhost)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false, // only for hosted DBs
+    rejectUnauthorized: false,
   },
 });
+
 // ===== /matched-books endpoint =====
 app.get('/api/matched-books', async (req, res) => {
   try {
@@ -60,6 +60,7 @@ app.get('/api/matched-books', async (req, res) => {
 // ===== /create-payment endpoint =====
 app.post('/api/create-payment', async (req, res) => {
   const { amount } = req.body;
+  const PAYMONGO_SECRET = process.env.PAYMONGO_SECRET;
 
   try {
     const response = await axios.post(
@@ -76,7 +77,7 @@ app.post('/api/create-payment', async (req, res) => {
       },
       {
         headers: {
-          Authorization: 'Basic ' + Buffer.from(functions.config().paymongo.secret + ':').toString('base64'),
+          Authorization: 'Basic ' + Buffer.from(PAYMONGO_SECRET + ':').toString('base64'),
           'Content-Type': 'application/json',
         },
       }
@@ -89,9 +90,7 @@ app.post('/api/create-payment', async (req, res) => {
   }
 });
 
-// Export the app as a Firebase function
-exports.api = functions.https.onRequest(app);
-
+// Start the server
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
