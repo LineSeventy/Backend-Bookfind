@@ -5,14 +5,14 @@ const axios = require("axios");
 
 const app = express();
 
-// Configure CORS
+
 app.use(cors({
-  origin: ['https://book-find-theta.vercel.app/'],
+  origin: '*',
   credentials: true
 }));
 app.use(express.json());
 
-// PostgreSQL connection (IMPORTANT: Use a public host, not localhost)
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -20,7 +20,7 @@ const pool = new Pool({
   },
 });
 
-// ===== /matched-books endpoint =====
+
 app.get('/api/matched-books', async (req, res) => {
   try {
     const bookId = req.query.id;
@@ -52,11 +52,11 @@ app.get('/api/matched-books', async (req, res) => {
       totalPages: Math.ceil(totalBooks / limit),
     });
   } catch (error) {
-    console.error('Error fetching matched_books:', error); // 👈 this line is key
+    console.error('Error fetching matched_books:', error); 
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-// ===== /create-payment endpoint =====
+
 app.post('/api/create-payment', async (req, res) => {
   const { amount } = req.body;
   const PAYMONGO_SECRET = process.env.PAYMONGO_SECRET;
