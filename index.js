@@ -57,6 +57,28 @@ app.get('/api/matched-books', async (req, res) => {
   }
 });
 
+app.get('/api/search-books', async (req, res) => {
+  try {
+    const query = req.query.q;
+
+    if (!query) {
+      return res.status(400).json({ error: 'Query parameter q is required' });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT id, fullybooked_title FROM matched_books
+       WHERE fullybooked_title ILIKE $1
+       LIMIT 10`,
+      [`%${query}%`]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.post('/api/create-payment', async (req, res) => {
   const { amount } = req.body;
   const PAYMONGO_SECRET = process.env.PAYMONGO_SECRET;
